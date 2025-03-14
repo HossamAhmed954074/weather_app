@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:weather_app/cubits/get_weather_cubit/get_weather_cubit.dart';
-import 'package:weather_app/widgets/matrial_color_custom.dart';
+import '../cubits/get_weather_cubit/get_weather_cubit.dart';
+import 'matrial_color_custom.dart';
 
 class WeatherInfoBody extends StatelessWidget {
   const WeatherInfoBody({

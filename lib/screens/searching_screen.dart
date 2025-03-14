@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:weather_app/cubits/get_weather_cubit/get_weather_cubit.dart';
+import '../cubits/get_weather_cubit/get_weather_cubit.dart';
 
 class SearchingScreen extends StatelessWidget {
   const SearchingScreen({super.key});
