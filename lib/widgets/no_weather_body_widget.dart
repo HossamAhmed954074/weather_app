@@ -11,11 +11,20 @@ class NoWeatherBody extends StatelessWidget {
       margin: EdgeInsets.all(10),
       width: double.infinity,
       height: double.infinity,
-      child: Center(
-          child: Text(
-        'There No Weather Start Searching Now ! ',
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+      Text(
+        'There Is No Weather 🙁',
         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-      )),
+      ),
+      Text(
+        'Start Searching Now 🔍',
+        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      ),
+              ],
+            ),
     );
   }
 }
