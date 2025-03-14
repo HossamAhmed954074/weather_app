@@ -5,14 +5,9 @@ import 'package:weather_app/models/weather_model.dart';
 
 class WeatherServeces {
   Dio dio;
-  final String _baseUrl = 'http://api.weatherapi.com/v1';
-  final String _apiKey = 'key=83423fa8dd494234bb7214816251202';
-
+  final String baseUrl = 'http://api.weatherapi.com/v1';
+  final String apiKey = 'key=83423fa8dd494234bb7214816251202';
   WeatherServeces({required this.dio});
-  
-  get apiKey => _apiKey;
-  
-  get baseUrl => _baseUrl;
 
   Future<WeatherModel> getCurrentWeather(String area) async {
     try {
