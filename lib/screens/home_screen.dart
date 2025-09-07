@@ -23,11 +23,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late AnimationController _slideController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  bool _hasTriedToLoadLastWeather = false;
 
   @override
   void initState() {
     super.initState();
     _initializeAnimations();
+    // Try to load last weather after a short delay for better perceived performance
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _tryLoadLastWeather();
+    });
+  }
+
+  void _tryLoadLastWeather() async {
+    if (_hasTriedToLoadLastWeather) return;
+    _hasTriedToLoadLastWeather = true;
+
+    // Small delay to allow UI to render first
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    if (mounted) {
+      context.read<WeatherCubit>().loadLastWeather();
+    }
   }
 
   void _initializeAnimations() {

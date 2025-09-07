@@ -12,6 +12,7 @@ class WeatherCubit extends Cubit<WeatherState> {
   final LocationService _locationService;
   WeatherModel? _currentWeather;
   Timer? _refreshTimer;
+  bool _isInitialized = false;
 
   WeatherCubit({
     WeatherRepository? repository,
@@ -22,16 +23,25 @@ class WeatherCubit extends Cubit<WeatherState> {
 
   WeatherModel? get currentWeather => _currentWeather;
 
-  Future<void> initialize() async {
+  /// Initialize lazily - only when needed
+  Future<void> _ensureInitialized() async {
+    if (_isInitialized) return;
+
     try {
       await _repository.initialize();
-      await _loadLastWeather();
+      _isInitialized = true;
+
+      // Try to load last weather only after manual request
+      // Don't do it automatically to speed up startup
     } catch (e) {
       log('Failed to initialize WeatherCubit: $e');
+      _isInitialized = true; // Mark as initialized even if failed
     }
   }
 
-  Future<void> _loadLastWeather() async {
+  /// Load last weather data - called manually when needed
+  Future<void> loadLastWeather() async {
+    await _ensureInitialized();
     final lastLocation = _repository.getLastSearchedLocation();
     if (lastLocation != null) {
       await getCurrentWeather(lastLocation);
@@ -40,6 +50,8 @@ class WeatherCubit extends Cubit<WeatherState> {
 
   Future<void> getCurrentWeather(String location,
       {bool forceRefresh = false}) async {
+    await _ensureInitialized();
+
     if (location.trim().isEmpty) {
       emit(const WeatherErrorState(
         message: 'Please enter a valid location',
@@ -104,6 +116,7 @@ class WeatherCubit extends Cubit<WeatherState> {
   }
 
   Future<void> getWeatherForecast(String location, {int days = 7}) async {
+    await _ensureInitialized();
     emit(const WeatherForecastLoading());
 
     try {
@@ -119,6 +132,7 @@ class WeatherCubit extends Cubit<WeatherState> {
   }
 
   Future<void> searchLocations(String query) async {
+    await _ensureInitialized();
     if (query.trim().isEmpty) {
       emit(const LocationSearchLoaded(locations: [], query: ''));
       return;
@@ -136,14 +150,17 @@ class WeatherCubit extends Cubit<WeatherState> {
   }
 
   Future<List<String>> getSearchHistory() async {
+    await _ensureInitialized();
     return await _repository.getSearchHistory();
   }
 
   Future<void> clearSearchHistory() async {
+    await _ensureInitialized();
     await _repository.clearSearchHistory();
   }
 
   Future<void> clearCache() async {
+    await _ensureInitialized();
     await _repository.clearCache();
     _currentWeather = null;
     emit(const WeatherInitial());

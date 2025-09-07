@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'cubits/get_weather_cubit/get_weather_cubit.dart';
-import 'cubits/get_weather_cubit/get_weather_states.dart';
 import 'screens/home_screen.dart';
 import 'screens/search_screen.dart';
 import 'constants/app_constants.dart';
@@ -13,13 +12,7 @@ import 'repositories/weather_repository.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables
-  await dotenv.load(fileName: ".env");
-
-  // Initialize repository
-  await WeatherRepository.instance.initialize();
-
-  // Set system UI overlay style
+  // Set system UI overlay style immediately for better perceived performance
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -28,7 +21,23 @@ void main() async {
     ),
   );
 
+  // Start the app immediately without waiting for heavy initialization
   runApp(const WeatherApp());
+
+  // Initialize heavy dependencies in the background
+  _initializeBackgroundServices();
+}
+
+Future<void> _initializeBackgroundServices() async {
+  try {
+    // Load environment variables asynchronously
+    await dotenv.load(fileName: ".env");
+
+    // Initialize repository asynchronously
+    await WeatherRepository.instance.initialize();
+  } catch (e) {
+    debugPrint('Background initialization error: $e');
+  }
 }
 
 class WeatherApp extends StatelessWidget {
@@ -37,31 +46,27 @@ class WeatherApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) {
-        final cubit = WeatherCubit();
-        cubit.initialize();
-        return cubit;
-      },
-      child: BlocBuilder<WeatherCubit, WeatherState>(
-        builder: (context, state) {
-          return MaterialApp(
-            title: 'Professional Weather',
-            debugShowCheckedModeBanner: false,
-            theme: _buildLightTheme(),
-            darkTheme: _buildDarkTheme(),
-            themeMode: ThemeMode.system,
-            home: const HomeScreen(),
-            routes: {
-              '/search': (context) => const SearchScreen(),
-            },
-          );
+      create: (context) => WeatherCubit(),
+      child: MaterialApp(
+        title: 'Professional Weather',
+        debugShowCheckedModeBanner: false,
+        theme: _buildLightTheme(),
+        darkTheme: _buildDarkTheme(),
+        themeMode: ThemeMode.system,
+        home: const HomeScreen(),
+        routes: {
+          '/search': (context) => const SearchScreen(),
         },
       ),
     );
   }
 
+  // Cache theme instances to avoid recreation
+  static ThemeData? _lightTheme;
+  static ThemeData? _darkTheme;
+
   ThemeData _buildLightTheme() {
-    return ThemeData(
+    return _lightTheme ??= ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: ColorScheme.fromSeed(
@@ -109,7 +114,7 @@ class WeatherApp extends StatelessWidget {
   }
 
   ThemeData _buildDarkTheme() {
-    return ThemeData(
+    return _darkTheme ??= ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(

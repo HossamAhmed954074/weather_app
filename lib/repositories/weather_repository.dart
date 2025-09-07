@@ -7,7 +7,8 @@ import '../constants/app_constants.dart';
 class WeatherRepository {
   late final WeatherService _weatherService;
   // late final Box<WeatherModel> _weatherCache;
-  late final SharedPreferences _prefs;
+  SharedPreferences? _prefs;
+  bool _isInitialized = false;
 
   WeatherRepository._();
 
@@ -18,19 +19,36 @@ class WeatherRepository {
   }
 
   Future<void> initialize() async {
-    _weatherService = WeatherService();
-    await Hive.initFlutter();
+    if (_isInitialized) return;
 
-    // if (!Hive.isAdapterRegistered(0)) {
-    //   Hive.registerAdapter(WeatherModelAdapter());
-    // }
+    try {
+      _weatherService = WeatherService();
+      await Hive.initFlutter();
 
-    // _weatherCache = await Hive.openBox<WeatherModel>('weather_cache');
-    _prefs = await SharedPreferences.getInstance();
+      // if (!Hive.isAdapterRegistered(0)) {
+      //   Hive.registerAdapter(WeatherModelAdapter());
+      // }
+
+      // _weatherCache = await Hive.openBox<WeatherModel>('weather_cache');
+      _prefs = await SharedPreferences.getInstance();
+      _isInitialized = true;
+    } catch (e) {
+      // If initialization fails, create a fallback instance
+      _weatherService = WeatherService();
+      _isInitialized = true;
+    }
+  }
+
+  Future<void> _ensureInitialized() async {
+    if (!_isInitialized) {
+      await initialize();
+    }
   }
 
   Future<WeatherModel> getCurrentWeather(String location,
       {bool forceRefresh = false}) async {
+    await _ensureInitialized();
+
     // Try to get cached data first
     // if (!forceRefresh) {
     //   final cachedWeather = _weatherCache.get(cacheKey);
@@ -60,27 +78,32 @@ class WeatherRepository {
 
   Future<List<WeatherModel>> getWeatherForecast(String location,
       {int days = 7}) async {
+    await _ensureInitialized();
     return await _weatherService.getWeatherForecast(location, days: days);
   }
 
   Future<List<String>> searchLocations(String query) async {
+    await _ensureInitialized();
     if (query.trim().isEmpty) return [];
     return await _weatherService.searchLocations(query);
   }
 
   Future<void> _saveLastSearchedLocation(String location) async {
-    await _prefs.setString(AppConstants.lastLocationCacheKey, location);
+    await _ensureInitialized();
+    await _prefs?.setString(AppConstants.lastLocationCacheKey, location);
   }
 
   String? getLastSearchedLocation() {
-    return _prefs.getString(AppConstants.lastLocationCacheKey);
+    return _prefs?.getString(AppConstants.lastLocationCacheKey);
   }
 
   Future<List<String>> getSearchHistory() async {
-    return _prefs.getStringList('search_history') ?? [];
+    await _ensureInitialized();
+    return _prefs?.getStringList('search_history') ?? [];
   }
 
   Future<void> addToSearchHistory(String location) async {
+    await _ensureInitialized();
     final history = await getSearchHistory();
 
     // Remove if already exists to avoid duplicates
@@ -94,7 +117,7 @@ class WeatherRepository {
       history.removeRange(10, history.length);
     }
 
-    await _prefs.setStringList('search_history', history);
+    await _prefs?.setStringList('search_history', history);
   }
 
   Future<void> clearCache() async {
@@ -102,7 +125,8 @@ class WeatherRepository {
   }
 
   Future<void> clearSearchHistory() async {
-    await _prefs.remove('search_history');
+    await _ensureInitialized();
+    await _prefs?.remove('search_history');
   }
 
   Future<bool> hasPermissionForLocation() async {
