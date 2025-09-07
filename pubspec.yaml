@@ -37,6 +37,31 @@ dependencies:
   dio: ^5.8.0+1
   loading_indicator: ^3.1.1
   flutter_bloc: ^9.0.0
+  
+  # Animation packages
+  lottie: ^3.1.2
+  shimmer: ^3.0.0
+  animated_text_kit: ^4.2.2
+  
+  # Storage and caching
+  shared_preferences: ^2.2.3
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  
+  # Network and utilities
+  connectivity_plus: ^6.0.3
+  geolocator: ^12.0.0
+  geocoding: ^3.0.0
+  permission_handler: ^11.3.1
+  
+  # UI enhancements
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.10+1
+  cached_network_image: ^3.3.1
+  glassmorphism: ^3.0.0
+  
+  # Environment variables
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -48,6 +73,10 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  
+  # Code generation
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.9
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -61,8 +90,10 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - assets/images/
+  assets:
+    - assets/images/
+    - assets/animations/
+    - .env
    
 
   # An image asset can refer to one or more resolution-specific "variants", see

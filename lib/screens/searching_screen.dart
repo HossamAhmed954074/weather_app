@@ -18,8 +18,8 @@ class SearchingScreen extends StatelessWidget {
         child: Center(
           child: TextField(
             onSubmitted: (val) {
-              BlocProvider.of<GetWeatherCubit>(context)
-                  .getCurrentWeather(nameCity: val);
+              BlocProvider.of<WeatherCubit>(context)
+                  .getCurrentWeather( val);
               Navigator.pop(context);
             },
             decoration: InputDecoration(
